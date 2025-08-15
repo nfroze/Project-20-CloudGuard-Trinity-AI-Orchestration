@@ -1,0 +1,108 @@
+# .github/workflows/deploy.yml
+name: Deploy Multi-Cloud AI Infrastructure
+
+on:
+  workflow_dispatch:  # Manual trigger button
+  push:
+    branches: [main]
+    paths:
+      - 'terraform/**'
+      - 'ansible/**'
+      - '.github/workflows/deploy.yml'
+
+jobs:
+  deploy:
+    name: Deploy AI Endpoints to AWS, Azure & GCP
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+    
+    - name: Setup Azure CLI
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: Setup GCP credentials
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+    
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.5.0
+    
+    - name: Terraform Init
+      working-directory: ./terraform
+      run: terraform init
+    
+    - name: Terraform Plan
+      working-directory: ./terraform
+      env:
+        TF_VAR_azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        TF_VAR_gcp_project_id: ${{ secrets.GCP_PROJECT_ID }}
+      run: terraform plan -out=tfplan
+    
+    - name: Terraform Apply
+      working-directory: ./terraform
+      env:
+        TF_VAR_azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        TF_VAR_gcp_project_id: ${{ secrets.GCP_PROJECT_ID }}
+      run: terraform apply tfplan
+    
+    - name: Get Terraform Outputs
+      id: tf_outputs
+      working-directory: ./terraform
+      run: |
+        echo "aws_ip=$(terraform output -raw aws_public_ip)" >> $GITHUB_OUTPUT
+        echo "azure_ip=$(terraform output -raw azure_public_ip)" >> $GITHUB_OUTPUT
+        echo "gcp_ip=$(terraform output -raw gcp_public_ip)" >> $GITHUB_OUTPUT
+    
+    - name: Wait for instances to be ready
+      run: sleep 60
+    
+    - name: Setup Python for Ansible
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install Ansible
+      run: |
+        python -m pip install --upgrade pip
+        pip install ansible
+    
+    - name: Create Ansible Inventory
+      run: |
+        cat > ansible/inventory/hosts <<EOF
+        [ai_endpoints]
+        aws-endpoint ansible_host=${{ steps.tf_outputs.outputs.aws_ip }} cloud_provider=AWS ansible_user=ec2-user
+        azure-endpoint ansible_host=${{ steps.tf_outputs.outputs.azure_ip }} cloud_provider=Azure ansible_user=azureuser ansible_password=CloudGuard123!@#
+        gcp-endpoint ansible_host=${{ steps.tf_outputs.outputs.gcp_ip }} cloud_provider=GCP ansible_user=debian
+        
+        [all:vars]
+        ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+        EOF
+    
+    - name: Run Ansible Playbook
+      working-directory: ./ansible
+      run: |
+        ansible-playbook playbooks/configure-nginx.yml -i inventory/hosts
+    
+    - name: Verify Deployments
+      run: |
+        echo "🚀 AI Model Endpoints Deployed Successfully!"
+        echo "================================"
+        echo "AWS Endpoint: http://${{ steps.tf_outputs.outputs.aws_ip }}"
+        echo "Azure Endpoint: http://${{ steps.tf_outputs.outputs.azure_ip }}"
+        echo "GCP Endpoint: http://${{ steps.tf_outputs.outputs.gcp_ip }}"
+        echo "================================"
+        echo "Check Datadog dashboard for unified monitoring"
