@@ -40,6 +40,7 @@ jobs:
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: 1.5.0
+        terraform_wrapper: false  # Add this to prevent wrapper issues
     
     - name: Terraform Init
       working-directory: ./terraform
@@ -63,9 +64,17 @@ jobs:
       id: tf_outputs
       working-directory: ./terraform
       run: |
-        echo "aws_ip=$(terraform output -raw aws_public_ip)" >> $GITHUB_OUTPUT
-        echo "azure_ip=$(terraform output -raw azure_public_ip)" >> $GITHUB_OUTPUT
-        echo "gcp_ip=$(terraform output -raw gcp_public_ip)" >> $GITHUB_OUTPUT
+        AWS_IP=$(terraform output -raw aws_public_ip 2>/dev/null)
+        AZURE_IP=$(terraform output -raw azure_public_ip 2>/dev/null)
+        GCP_IP=$(terraform output -raw gcp_public_ip 2>/dev/null)
+        
+        echo "aws_ip=$AWS_IP" >> $GITHUB_OUTPUT
+        echo "azure_ip=$AZURE_IP" >> $GITHUB_OUTPUT
+        echo "gcp_ip=$GCP_IP" >> $GITHUB_OUTPUT
+        
+        echo "AWS IP: $AWS_IP"
+        echo "Azure IP: $AZURE_IP"
+        echo "GCP IP: $GCP_IP"
     
     - name: Wait for instances to be ready
       run: sleep 60
