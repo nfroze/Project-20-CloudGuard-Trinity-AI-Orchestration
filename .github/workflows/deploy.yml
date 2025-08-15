@@ -91,6 +91,7 @@ jobs:
     
     - name: Create Ansible Inventory
       run: |
+        mkdir -p ansible/inventory
         cat > ansible/inventory/hosts <<EOF
         [ai_endpoints]
         aws-endpoint ansible_host=${{ steps.tf_outputs.outputs.aws_ip }} cloud_provider=AWS ansible_user=ec2-user
