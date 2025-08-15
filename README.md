@@ -1,4 +1,4 @@
-# 🌍 Project 20: CloudGuard Trinity - Multi-Cloud AI Orchestration Platform
+# 🌍 Project 20: CloudGuard Trinity AI Orchestration
 
 ## 🚀 TL;DR
 
