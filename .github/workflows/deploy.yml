@@ -40,7 +40,7 @@ jobs:
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: 1.5.0
-        terraform_wrapper: false  # Add this to prevent wrapper issues
+        terraform_wrapper: false
     
     - name: Terraform Init
       working-directory: ./terraform
@@ -89,14 +89,20 @@ jobs:
         python -m pip install --upgrade pip
         pip install ansible
     
+    - name: Setup SSH Key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/cloudguard-demo-key
+        chmod 600 ~/.ssh/cloudguard-demo-key
+    
     - name: Create Ansible Inventory
       run: |
         mkdir -p ansible/inventory
         cat > ansible/inventory/hosts <<EOF
         [ai_endpoints]
-        aws-endpoint ansible_host=${{ steps.tf_outputs.outputs.aws_ip }} cloud_provider=AWS ansible_user=ec2-user
-        azure-endpoint ansible_host=${{ steps.tf_outputs.outputs.azure_ip }} cloud_provider=Azure ansible_user=azureuser ansible_password=CloudGuard123!@#
-        gcp-endpoint ansible_host=${{ steps.tf_outputs.outputs.gcp_ip }} cloud_provider=GCP ansible_user=debian
+        aws-endpoint ansible_host=${{ steps.tf_outputs.outputs.aws_ip }} cloud_provider=AWS ansible_user=ec2-user ansible_ssh_private_key_file=~/.ssh/cloudguard-demo-key
+        azure-endpoint ansible_host=${{ steps.tf_outputs.outputs.azure_ip }} cloud_provider=Azure ansible_user=azureuser ansible_ssh_private_key_file=~/.ssh/cloudguard-demo-key
+        gcp-endpoint ansible_host=${{ steps.tf_outputs.outputs.gcp_ip }} cloud_provider=GCP ansible_user=debian ansible_ssh_private_key_file=~/.ssh/cloudguard-demo-key
         
         [all:vars]
         ansible_ssh_common_args='-o StrictHostKeyChecking=no'

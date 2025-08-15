@@ -1,9 +1,16 @@
 # terraform/main.tf
 
+# SSH Key Pair for all instances
+resource "aws_key_pair" "demo_key" {
+  key_name   = "cloudguard-demo-key"
+  public_key = file("${path.module}/cloudguard-demo-key.pub")
+}
+
 # AWS EC2 Instance
 resource "aws_instance" "ai_endpoint" {
   ami           = "ami-0b4c7755cdf0d9219"  # Amazon Linux 2023 in eu-west-2
   instance_type = var.aws_instance_type
+  key_name      = aws_key_pair.demo_key.key_name  # Added SSH key
   
   tags = {
     Name        = "${var.project_name}-aws"
@@ -65,7 +72,7 @@ resource "azurerm_resource_group" "ai_platform" {
   }
 }
 
-# Azure Virtual Machine
+# Azure Virtual Machine - UPDATED TO USE SSH
 resource "azurerm_linux_virtual_machine" "ai_endpoint" {
   name                = "${var.project_name}-azure"
   resource_group_name = azurerm_resource_group.ai_platform.name
@@ -73,8 +80,12 @@ resource "azurerm_linux_virtual_machine" "ai_endpoint" {
   size                = var.azure_vm_size
   
   admin_username = "azureuser"
-  admin_password = "CloudGuard123!@#"
-  disable_password_authentication = false
+  disable_password_authentication = true  # Changed to true
+  
+  admin_ssh_key {  # Added SSH key block
+    username   = "azureuser"
+    public_key = file("${path.module}/cloudguard-demo-key.pub")
+  }
   
   os_disk {
     caching              = "ReadWrite"
@@ -174,7 +185,7 @@ resource "azurerm_network_interface_security_group_association" "ai_endpoint" {
   network_security_group_id = azurerm_network_security_group.ai_endpoint.id
 }
 
-# GCP Compute Instance
+# GCP Compute Instance - UPDATED WITH SSH KEY
 resource "google_compute_instance" "ai_endpoint" {
   name         = "${var.project_name}-gcp"
   machine_type = var.gcp_machine_type
@@ -195,6 +206,10 @@ resource "google_compute_instance" "ai_endpoint" {
   }
   
   metadata_startup_script = "echo 'AI Endpoint Initializing...'"
+  
+  metadata = {  # Added SSH key
+    ssh-keys = "debian:${file("${path.module}/cloudguard-demo-key.pub")}"
+  }
   
   tags = ["http-server", "https-server"]
   
