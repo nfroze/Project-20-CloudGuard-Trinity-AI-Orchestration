@@ -85,7 +85,7 @@
         dest: /var/www/ai-endpoint/predict.json
         mode: '0644'
     
-    - name: Configure nginx site
+    - name: Configure nginx site (Debian/Ubuntu)
       copy:
         content: |
           server {
@@ -124,6 +124,49 @@
               }
           }
         dest: /etc/nginx/sites-available/default
+      when: ansible_os_family == "Debian"
+      notify: restart nginx
+    
+    - name: Configure nginx site (RedHat/Amazon)
+      copy:
+        content: |
+          server {
+              listen 80 default_server;
+              listen [::]:80 default_server;
+              server_name _;
+              
+              root /var/www/ai-endpoint;
+              index index.html;
+              
+              # Main AI endpoint page
+              location / {
+                  try_files $uri $uri/ =404;
+              }
+              
+              # Mock AI prediction endpoint
+              location /v1/models/predict {
+                  default_type application/json;
+                  try_files /predict.json =404;
+                  add_header X-Model-Name "{{ model_configs[cloud_provider].model_name }}";
+                  add_header X-Cloud-Provider "{{ cloud_provider }}";
+              }
+              
+              # Health check endpoint
+              location /health {
+                  default_type application/json;
+                  return 200 '{"status":"healthy","provider":"{{ cloud_provider }}"}';
+              }
+              
+              # Metrics endpoint (Prometheus-style)
+              location /metrics {
+                  default_type text/plain;
+                  return 200 'ai_model_requests_total{provider="{{ cloud_provider }}"} {{ range(1000, 5000) | random }}
+          ai_model_latency_seconds{provider="{{ cloud_provider }}"} 0.0{{ range(10, 99) | random }}
+          ai_model_gpu_utilization{provider="{{ cloud_provider }}"} 0.{{ range(60, 95) | random }}';
+              }
+          }
+        dest: /etc/nginx/conf.d/default.conf
+      when: ansible_os_family == "RedHat"
       notify: restart nginx
     
     - name: Ensure nginx is started and enabled
