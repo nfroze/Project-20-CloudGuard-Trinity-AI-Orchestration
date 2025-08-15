@@ -1,4 +1,4 @@
-# CloudGuard Trinity - Multi-Cloud AI Orchestration Platform
+# 🌍 Project 20 CloudGuard Trinity AI Orchestration
 
 ## 🚀 TL;DR
 A production-grade multi-cloud orchestration platform that deploys and manages AI model inference endpoints across AWS, Azure, and GCP simultaneously. Using GitOps principles, infrastructure is provisioned via Terraform, configured through Ansible, deployed with GitHub Actions CI/CD, and monitored through Datadog - all from a single pipeline.
