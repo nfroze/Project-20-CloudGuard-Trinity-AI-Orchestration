@@ -39,14 +39,6 @@
         name: nginx
         state: present
     
-    - name: Install Python pip (for future AI libraries simulation)
-      package:
-        name: 
-          - python3-pip
-          - python3-dev
-        state: present
-      when: ansible_os_family == "Debian"
-    
     - name: Create AI model directory
       file:
         path: /var/www/ai-endpoint
