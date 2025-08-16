@@ -15,7 +15,7 @@ Enterprises running multi-cloud workloads face critical challenges:
 - **3× operational overhead** managing separate cloud deployments
 - **Configuration drift** between AWS, Azure, and GCP environments  
 - **No unified monitoring** - switching between 3 different dashboards
-- **Manual coordination** taking days with 40% failure rate
+- **Manual coordination** taking days with typical 40% failure rate
 - **Inconsistent deployments** due to cloud-specific requirements
 
 ### The Solution
@@ -148,8 +148,8 @@ Detailed Datadog monitoring information showing successful agent deployment and 
 ### Quantifiable Metrics
 - **Deployment Speed**: 12 minutes for 3 clouds (vs 3+ days manually)
 - **Consistency**: 100% configuration parity across clouds
-- **Pipeline Efficiency**: 15× faster than sequential cloud deployments
-- **Error Reduction**: 0% configuration drift (was 40% with manual)
+- **Pipeline Efficiency**: 3× faster than sequential cloud deployments
+- **Error Reduction**: 0% configuration drift (vs typical 40% with manual)
 - **Unified Monitoring**: 1 Datadog dashboard replaces 3 cloud consoles
 
 ### Cost Intelligence
@@ -329,7 +329,7 @@ CloudGuard-Multi-Cloud-Orchestration/
 ## 🏆 Project Outcomes
 
 ### Deployment Metrics
-- **Total Resources**: 77+ cloud resources managed
+- **Infrastructure Components**: 13 resources across 3 clouds
 - **Deployment Time**: 11 minutes 56 seconds (verified)
 - **Success Rate**: 100% on first deployment
 - **Monitoring Coverage**: All 3 clouds reporting within 2 minutes
