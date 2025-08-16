@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CloudGuard AI Platform - {{ cloud_provider }}</title>
+    <title>CloudGuard Trinity - {{ cloud_provider }}</title>
     <style>
         * {
             margin: 0;
@@ -149,73 +149,123 @@
             font-size: 0.85em;
             opacity: 0.7;
         }
+        
+        .architecture {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        .architecture-title {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .tech-stack {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .tech-badge {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">🤖</div>
-            <h1>CloudGuard AI Platform</h1>
+            <div class="logo">☁️</div>
+            <h1>CloudGuard Trinity Platform</h1>
             <div class="provider-badge">{{ cloud_provider }} Infrastructure</div>
         </div>
         
         <div class="status">
             <div class="status-indicator"></div>
-            <span>Model Serving Active</span>
+            <span>Instance Active</span>
         </div>
         
         <div class="info-grid">
             <div class="info-card">
-                <div class="info-label">Model</div>
-                <div class="info-value">{{ model_name }}</div>
+                <div class="info-label">Instance Type</div>
+                <div class="info-value">
+                    {% if cloud_provider == 'AWS' %}t2.micro
+                    {% elif cloud_provider == 'Azure' %}Standard_B1s
+                    {% else %}e2-micro
+                    {% endif %}
+                </div>
             </div>
             <div class="info-card">
-                <div class="info-label">Version</div>
-                <div class="info-value">{{ model_version }}</div>
+                <div class="info-label">Region</div>
+                <div class="info-value">
+                    {% if cloud_provider == 'AWS' %}eu-west-2
+                    {% elif cloud_provider == 'Azure' %}UK South
+                    {% else %}europe-west2
+                    {% endif %}
+                </div>
             </div>
             <div class="info-card">
-                <div class="info-label">Framework</div>
-                <div class="info-value">{{ framework }}</div>
+                <div class="info-label">OS Family</div>
+                <div class="info-value">{{ ansible_os_family }}</div>
             </div>
             <div class="info-card">
-                <div class="info-label">GPU Type</div>
-                <div class="info-value">{{ gpu_type }}</div>
+                <div class="info-label">Monitoring</div>
+                <div class="info-value">Datadog EU</div>
+            </div>
+        </div>
+        
+        <div class="architecture">
+            <div class="architecture-title">🏗️ Architecture Stack</div>
+            <div class="tech-stack">
+                <span class="tech-badge">Terraform</span>
+                <span class="tech-badge">Ansible</span>
+                <span class="tech-badge">GitHub Actions</span>
+                <span class="tech-badge">Datadog</span>
+                <span class="tech-badge">Nginx</span>
             </div>
         </div>
         
         <div class="endpoints">
             <div class="endpoint-title">Available Endpoints</div>
             <div class="endpoint-item">
+                <span><span class="method">GET</span> /</span>
+                <span>This page</span>
+            </div>
+            <div class="endpoint-item">
                 <span><span class="method">GET</span> /health</span>
-                <span>Health Check</span>
+                <span>Health Check API</span>
             </div>
             <div class="endpoint-item">
-                <span><span class="method">POST</span> /v1/models/predict</span>
-                <span>Inference API</span>
-            </div>
-            <div class="endpoint-item">
-                <span><span class="method">GET</span> /metrics</span>
-                <span>Prometheus Metrics</span>
+                <span><span class="method">GET</span> /nginx_status</span>
+                <span>Nginx Metrics (Internal)</span>
             </div>
         </div>
         
         <div class="footer">
-            CloudGuard Trinity - Multi-Cloud AI Orchestration Platform<br>
-            Managed by Terraform & Ansible | Monitored by Datadog
+            CloudGuard Trinity - Multi-Cloud Orchestration Platform<br>
+            Deployed via GitOps | Managed by Terraform & Ansible | Monitored by Datadog<br>
+            Instance: {{ ansible_hostname }}
         </div>
     </div>
     
     <script>
-        // Simulate real-time metrics update
+        // Simple health check
         setInterval(() => {
-            console.log('AI Model Metrics:', {
-                timestamp: new Date().toISOString(),
-                provider: '{{ cloud_provider }}',
-                model: '{{ model_name }}',
-                inference_requests: Math.floor(Math.random() * 1000),
-                avg_latency_ms: Math.floor(Math.random() * 50) + 20,
-                gpu_utilization: Math.floor(Math.random() * 30) + 60
-            });
-        }, 5000);
+            fetch('/health')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Health Check:', data);
+                })
+                .catch(error => {
+                    console.error('Health check failed:', error);
+                });
+        }, 30000); // Check every 30 seconds
     </script>
 </html>

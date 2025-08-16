@@ -1,27 +1,9 @@
 # ansible/playbooks/configure-nginx.yml
 ---
-- name: Configure AI Model Endpoints on Multi-Cloud Infrastructure
+- name: Configure Multi-Cloud Infrastructure
   hosts: all
   become: yes
   gather_facts: yes
-  
-  vars:
-    model_configs:
-      AWS: 
-        model_name: "BERT-Large-Uncased"
-        model_version: "2.1.0"
-        framework: "PyTorch"
-        gpu_type: "Tesla-T4"
-      Azure:
-        model_name: "GPT-2-Medium"
-        model_version: "1.5.0"
-        framework: "TensorFlow"
-        gpu_type: "Tesla-K80"
-      GCP:
-        model_name: "LLaMA-2-7B"
-        model_version: "3.0.1"
-        framework: "Transformers"
-        gpu_type: "Tesla-T4"
   
   tasks:
     - name: Update package cache (Debian/Ubuntu)
@@ -39,52 +21,29 @@
         name: nginx
         state: present
     
-    - name: Create AI model directory
+    - name: Create web directory
       file:
-        path: /var/www/ai-endpoint
+        path: /var/www/cloudguard
         state: directory
         owner: www-data
         group: www-data
         mode: '0755'
       when: ansible_os_family == "Debian"
     
-    - name: Create AI model directory (RedHat)
+    - name: Create web directory (RedHat)
       file:
-        path: /var/www/ai-endpoint
+        path: /var/www/cloudguard
         state: directory
         owner: nginx
         group: nginx
         mode: '0755'
       when: ansible_os_family == "RedHat"
     
-    - name: Deploy AI endpoint HTML page
+    - name: Deploy web interface
       template:
         src: ../templates/index.html.j2
-        dest: /var/www/ai-endpoint/index.html
+        dest: /var/www/cloudguard/index.html
         mode: '0644'
-      vars:
-        model_name: "{{ model_configs[cloud_provider].model_name }}"
-        model_version: "{{ model_configs[cloud_provider].model_version }}"
-        framework: "{{ model_configs[cloud_provider].framework }}"
-        gpu_type: "{{ model_configs[cloud_provider].gpu_type }}"
-    
-    - name: Create mock API response
-      copy:
-        content: |
-          {
-            "status": "healthy",
-            "model": "{{ model_configs[cloud_provider].model_name }}",
-            "version": "{{ model_configs[cloud_provider].model_version }}",
-            "cloud_provider": "{{ cloud_provider }}",
-            "inference_time_ms": {{ 20 + (range(1, 50) | random) }},
-            "confidence": 0.{{ range(85, 99) | random }},
-            "tokens_processed": {{ range(100, 1000) | random }},
-            "gpu_utilization": {{ range(60, 95) | random }},
-            "timestamp": "{{ ansible_date_time.iso8601 }}"
-          }
-        dest: /var/www/ai-endpoint/predict.json
-        mode: '0644'
-        force: yes
     
     - name: Configure nginx site (Debian/Ubuntu)
       copy:
@@ -94,34 +53,18 @@
               listen [::]:80 default_server;
               server_name _;
               
-              root /var/www/ai-endpoint;
+              root /var/www/cloudguard;
               index index.html;
               
-              # Main AI endpoint page
+              # Main page
               location / {
                   try_files $uri $uri/ =404;
-              }
-              
-              # Mock AI prediction endpoint
-              location /v1/models/predict {
-                  default_type application/json;
-                  try_files /predict.json =404;
-                  add_header X-Model-Name "{{ model_configs[cloud_provider].model_name }}";
-                  add_header X-Cloud-Provider "{{ cloud_provider }}";
               }
               
               # Health check endpoint
               location /health {
                   default_type application/json;
-                  return 200 '{"status":"healthy","provider":"{{ cloud_provider }}"}';
-              }
-              
-              # Metrics endpoint (Prometheus-style)
-              location /metrics {
-                  default_type text/plain;
-                  return 200 'ai_model_requests_total{provider="{{ cloud_provider }}"} {{ range(1000, 5000) | random }}
-          ai_model_latency_seconds{provider="{{ cloud_provider }}"} 0.0{{ range(10, 99) | random }}
-          ai_model_gpu_utilization{provider="{{ cloud_provider }}"} 0.{{ range(60, 95) | random }}';
+                  return 200 '{"status":"healthy","provider":"{{ cloud_provider }}","instance":"{{ ansible_hostname }}"}';
               }
               
               # Nginx status for Datadog
@@ -146,34 +89,18 @@
               listen [::]:80 default_server;
               server_name _;
               
-              root /var/www/ai-endpoint;
+              root /var/www/cloudguard;
               index index.html;
               
-              # Main AI endpoint page
+              # Main page
               location / {
                   try_files $uri $uri/ =404;
-              }
-              
-              # Mock AI prediction endpoint
-              location /v1/models/predict {
-                  default_type application/json;
-                  try_files /predict.json =404;
-                  add_header X-Model-Name "{{ model_configs[cloud_provider].model_name }}";
-                  add_header X-Cloud-Provider "{{ cloud_provider }}";
               }
               
               # Health check endpoint
               location /health {
                   default_type application/json;
-                  return 200 '{"status":"healthy","provider":"{{ cloud_provider }}"}';
-              }
-              
-              # Metrics endpoint (Prometheus-style)
-              location /metrics {
-                  default_type text/plain;
-                  return 200 'ai_model_requests_total{provider="{{ cloud_provider }}"} {{ range(1000, 5000) | random }}
-          ai_model_latency_seconds{provider="{{ cloud_provider }}"} 0.0{{ range(10, 99) | random }}
-          ai_model_gpu_utilization{provider="{{ cloud_provider }}"} 0.{{ range(60, 95) | random }}';
+                  return 200 '{"status":"healthy","provider":"{{ cloud_provider }}","instance":"{{ ansible_hostname }}"}';
               }
               
               # Nginx status for Datadog
@@ -225,8 +152,6 @@
                 - env:production
                 - project:cloudguard-trinity
                 - cloud:{{ cloud_provider | lower }}
-                - model:{{ model_configs[cloud_provider].model_name | lower | replace(' ', '-') }}
-                - gpu:{{ model_configs[cloud_provider].gpu_type }}
                 - region:{{ ansible_hostname }}
               
               logs_enabled: true
@@ -234,26 +159,6 @@
             owner: dd-agent
             group: dd-agent
             mode: '0640'
-            force: yes
-        
-        - name: Configure Prometheus scraper for custom metrics
-          copy:
-            content: |
-              init_config:
-              
-              instances:
-                - prometheus_url: http://localhost/metrics
-                  namespace: cloudguard
-                  metrics:
-                    - "*"
-                  tags:
-                    - cloud:{{ cloud_provider | lower }}
-                    - model:{{ model_configs[cloud_provider].model_name | lower | replace(' ', '-') }}
-                  timeout: 10
-            dest: /etc/datadog-agent/conf.d/prometheus.d/conf.yaml
-            owner: dd-agent
-            group: dd-agent
-            mode: '0644'
             force: yes
         
         - name: Configure nginx monitoring
@@ -291,22 +196,25 @@
       when: datadog_api_key is defined
     
     # ===== DEPLOYMENT INFO SECTION =====
-    - name: Create AI model info file (for verification)
+    - name: Create deployment info file
       copy:
         content: |
           ===================================
-          CloudGuard AI Platform - Model Deployment
+          CloudGuard Trinity - Multi-Cloud Platform
           ===================================
           Cloud Provider: {{ cloud_provider }}
-          Model: {{ model_configs[cloud_provider].model_name }}
-          Version: {{ model_configs[cloud_provider].model_version }}
-          Framework: {{ model_configs[cloud_provider].framework }}
-          GPU Type: {{ model_configs[cloud_provider].gpu_type }} (Simulated)
-          Endpoint: http://{{ ansible_default_ipv4.address }}/
-          API Endpoint: http://{{ ansible_default_ipv4.address }}/v1/models/predict
-          Health Check: http://{{ ansible_default_ipv4.address }}/health
-          Metrics: http://{{ ansible_default_ipv4.address }}/metrics
-          Datadog Agent: {{ 'Installed' if datadog_api_key is defined else 'Not Installed' }}
+          Instance: {{ ansible_hostname }}
+          IP Address: {{ ansible_default_ipv4.address }}
+          Region: {{ ansible_hostname }}
+          OS Family: {{ ansible_os_family }}
+          
+          Endpoints:
+          - Web Interface: http://{{ ansible_default_ipv4.address }}/
+          - Health Check: http://{{ ansible_default_ipv4.address }}/health
+          
+          Monitoring:
+          - Datadog Agent: {{ 'Installed' if datadog_api_key is defined else 'Not Installed' }}
+          - Region: EU (datadoghq.eu)
           ===================================
         dest: /home/{{ ansible_user }}/deployment-info.txt
         mode: '0644'
@@ -315,11 +223,10 @@
     - name: Display deployment information
       debug:
         msg:
-          - "✅ AI Model Endpoint Deployed Successfully!"
+          - "✅ Infrastructure Deployed Successfully!"
           - "Provider: {{ cloud_provider }}"
-          - "Model: {{ model_configs[cloud_provider].model_name }}"
           - "URL: http://{{ ansible_default_ipv4.address }}/"
-          - "API: http://{{ ansible_default_ipv4.address }}/v1/models/predict"
+          - "Health: http://{{ ansible_default_ipv4.address }}/health"
           - "Datadog Agent: {{ 'Installed and collecting metrics' if datadog_api_key is defined else 'Not installed' }}"
   
   handlers:
