@@ -10,7 +10,7 @@ variable "aws_region" {
 variable "aws_instance_type" {
   description = "Instance type for AWS EC2"
   type        = string
-  default     = "t2.micro"  # In production: "p3.2xlarge" for GPU
+  default     = "t2.micro"
 }
 
 # Azure Variables
@@ -22,7 +22,7 @@ variable "azure_subscription_id" {
 variable "azure_resource_group" {
   description = "Azure Resource Group name"
   type        = string
-  default     = "cloudguard-ai-rg"
+  default     = "cloudguard-rg"
 }
 
 variable "azure_location" {
@@ -34,7 +34,7 @@ variable "azure_location" {
 variable "azure_vm_size" {
   description = "Size for Azure VM"
   type        = string
-  default     = "Standard_B1s"  # In production: "Standard_NC6" for GPU
+  default     = "Standard_B1s"
 }
 
 # GCP Variables
@@ -58,12 +58,12 @@ variable "gcp_zone" {
 variable "gcp_machine_type" {
   description = "Machine type for GCP instance"
   type        = string
-  default     = "e2-micro"  # In production: "n1-standard-4" with GPU attached
+  default     = "e2-micro"
 }
 
 # Common Variables
 variable "project_name" {
   description = "Project name for tagging"
   type        = string
-  default     = "cloudguard-ai-platform"
+  default     = "cloudguard-orchestration"
 }

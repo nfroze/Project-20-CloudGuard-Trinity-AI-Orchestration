@@ -64,7 +64,7 @@
               # Health check endpoint
               location /health {
                   default_type application/json;
-                  return 200 '{"status":"healthy","provider":"{{ cloud_provider }}","instance":"{{ ansible_hostname }}"}';
+                  return 200 '{"status":"healthy","provider":"{{ cloud_provider }}","instance":"{{ ansible_hostname }}","timestamp":"{{ ansible_date_time.iso8601 }}"}';
               }
               
               # Nginx status for Datadog
@@ -100,7 +100,7 @@
               # Health check endpoint
               location /health {
                   default_type application/json;
-                  return 200 '{"status":"healthy","provider":"{{ cloud_provider }}","instance":"{{ ansible_hostname }}"}';
+                  return 200 '{"status":"healthy","provider":"{{ cloud_provider }}","instance":"{{ ansible_hostname }}","timestamp":"{{ ansible_date_time.iso8601 }}"}';
               }
               
               # Nginx status for Datadog
@@ -136,7 +136,7 @@
           shell: |
             DD_API_KEY="{{ datadog_api_key }}" \
             DD_SITE="datadoghq.eu" \
-            DD_HOSTNAME="{{ cloud_provider | lower }}-ai-endpoint" \
+            DD_HOSTNAME="{{ cloud_provider | lower }}-cloudguard-instance" \
             bash /tmp/datadog_install.sh
           args:
             creates: /etc/datadog-agent/datadog.yaml
@@ -146,13 +146,14 @@
             content: |
               api_key: {{ datadog_api_key }}
               site: datadoghq.eu
-              hostname: {{ cloud_provider | lower }}-ai-endpoint
+              hostname: {{ cloud_provider | lower }}-cloudguard-instance
               
               tags:
                 - env:production
                 - project:cloudguard-orchestration
                 - cloud:{{ cloud_provider | lower }}
                 - region:{{ ansible_hostname }}
+                - service:multi-cloud-orchestration
               
               logs_enabled: true
             dest: /etc/datadog-agent/datadog.yaml
@@ -233,4 +234,4 @@
     - name: restart nginx
       systemd:
         name: nginx
-        state: restarted 
+        state: restarted
