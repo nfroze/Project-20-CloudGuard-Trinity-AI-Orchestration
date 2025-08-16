@@ -1,6 +1,6 @@
 # 🌎 Project 20: CloudGuard Multi-Cloud Orchestration
 
-## 🚀 TL;DR
+## 🚀 TLDR
 
 Built a production-grade multi-cloud orchestration platform that deploys infrastructure across AWS, Azure, and GCP simultaneously. Using GitOps principles, infrastructure is provisioned via Terraform, configured through Ansible, deployed with GitHub Actions CI/CD, and monitored through Datadog agents - all from a single pipeline.
 
