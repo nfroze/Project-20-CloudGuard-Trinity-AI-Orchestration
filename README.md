@@ -1,4 +1,4 @@
-# 🌐 Project 20: CloudGuard Multi-Cloud Orchestration
+# 🌎 Project 20: CloudGuard Multi-Cloud Orchestration
 
 ## 🚀 TL;DR
 
