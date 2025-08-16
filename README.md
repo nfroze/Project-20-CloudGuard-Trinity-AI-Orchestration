@@ -141,6 +141,13 @@ Detailed Datadog monitoring information showing successful agent deployment and 
 ![Datadog Monitoring Info](screenshots/10.png)
 *Confirmation of Datadog agent deployment with proper EU region configuration (datadoghq.eu), showing system metrics, service metrics, and proper tagging for project:cloudguard-orchestration across all clouds.*
 
+### 11. Datadog Infrastructure Host List
+
+Clean infrastructure view showing all three cloud instances actively reporting to Datadog.
+
+![Datadog Host List](screenshots/11.png)
+*Datadog infrastructure list confirming 3 hosts (1-3 of 3) with all cloudguard-orchestration instances ACTIVE across GCP, AWS, and Azure. All agents running v7.69.0 and successfully reporting CPU metrics, demonstrating complete multi-cloud observability.*
+
 ---
 
 ## 💰 Business Impact
