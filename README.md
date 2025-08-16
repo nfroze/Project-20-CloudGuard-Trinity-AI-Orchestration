@@ -148,6 +148,13 @@ Clean infrastructure view showing all three cloud instances actively reporting t
 ![Datadog Host List](screenshots/11.png)
 *Datadog infrastructure list confirming 3 hosts (1-3 of 3) with all cloudguard-orchestration instances ACTIVE across GCP, AWS, and Azure. All agents running v7.69.0 and successfully reporting CPU metrics, demonstrating complete multi-cloud observability.*
 
+### 12. GitHub Secrets Management
+
+Secure credentials management for multi-cloud deployments through GitHub repository secrets.
+
+![GitHub Secrets](screenshots/12.png)
+*GitHub repository secrets configuration showing secure management of credentials for all three cloud providers (AWS, Azure, GCP), SSH keys, and Datadog API key. All secrets properly encrypted and managed through GitHub's secure vault, demonstrating security best practices for CI/CD pipelines.*
+
 ---
 
 ## 💰 Business Impact
