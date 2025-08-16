@@ -82,7 +82,7 @@ The crown jewel of the platform - a single pane of glass showing all three cloud
 
 The Nginx web application deployed on Azure showing cloud-specific configuration.
 
-![Azure Web Interface](screenshots/2png)
+![Azure Web Interface](screenshots/2.png)
 *Azure instance (Standard_B1s) running in UK South with Debian OS, showing the CloudGuard platform interface with real-time status indicator and available endpoints.*
 
 ### 3. AWS Web Interface
