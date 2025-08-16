@@ -203,7 +203,7 @@
         - name: Install Datadog Agent
           shell: |
             DD_API_KEY="{{ datadog_api_key }}" \
-            DD_SITE="datadoghq.com" \
+            DD_SITE="datadoghq.eu" \
             DD_HOSTNAME="{{ cloud_provider | lower }}-ai-endpoint" \
             bash /tmp/datadog_install.sh
           args:
@@ -213,7 +213,7 @@
           copy:
             content: |
               api_key: {{ datadog_api_key }}
-              site: datadoghq.com
+              site: datadoghq.eu
               hostname: {{ cloud_provider | lower }}-ai-endpoint
               
               tags:
