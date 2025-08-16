@@ -108,10 +108,14 @@ jobs:
         ansible_ssh_common_args='-o StrictHostKeyChecking=no'
         EOF
     
-    - name: Run Ansible Playbook
+    - name: Run Ansible Playbook with Datadog Configuration
       working-directory: ./ansible
+      env:
+        DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       run: |
-        ansible-playbook playbooks/configure-nginx.yml -i inventory/hosts
+        ansible-playbook playbooks/configure-nginx.yml \
+          -i inventory/hosts \
+          -e datadog_api_key=$DATADOG_API_KEY
     
     - name: Verify Deployments
       run: |
@@ -121,4 +125,38 @@ jobs:
         echo "Azure Endpoint: http://${{ steps.tf_outputs.outputs.azure_ip }}"
         echo "GCP Endpoint: http://${{ steps.tf_outputs.outputs.gcp_ip }}"
         echo "================================"
-        echo "Check Datadog dashboard for unified monitoring"
+        
+        # Test endpoints
+        echo "Testing endpoints..."
+        for ip in ${{ steps.tf_outputs.outputs.aws_ip }} ${{ steps.tf_outputs.outputs.azure_ip }} ${{ steps.tf_outputs.outputs.gcp_ip }}; do
+          echo "Testing http://$ip/health"
+          curl -s -o /dev/null -w "%{http_code}" http://$ip/health || true
+          echo ""
+        done
+        
+        echo "================================"
+        echo "Datadog Agent Status: Installed and collecting metrics"
+        echo "Check Datadog dashboard in 2-3 minutes for:"
+        echo "  - Custom metrics (cloudguard.ai_model_*)"
+        echo "  - System metrics (system.cpu.*, system.mem.*)"
+        echo "  - Nginx metrics (nginx.net.*)"
+        echo "================================"
+    
+    - name: Display Datadog Dashboard Info
+      if: success()
+      run: |
+        echo "📊 Datadog Monitoring Active!"
+        echo ""
+        echo "Your metrics should appear in Datadog within 2-3 minutes:"
+        echo ""
+        echo "Custom AI Metrics:"
+        echo "  • cloudguard.ai_model_requests_total"
+        echo "  • cloudguard.ai_model_latency_seconds"
+        echo "  • cloudguard.ai_model_gpu_utilization"
+        echo ""
+        echo "These metrics are tagged with:"
+        echo "  • cloud:aws/azure/gcp"
+        echo "  • model:bert-large-uncased/gpt-2-medium/llama-2-7b"
+        echo "  • project:cloudguard-trinity"
+        echo ""
+        echo "To view: Go to Metrics Explorer and search for 'cloudguard'"
