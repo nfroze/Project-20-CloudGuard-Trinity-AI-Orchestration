@@ -1,4 +1,4 @@
-# 🌍 Project 20: CloudGuard Trinity Multi-Cloud Orchestration
+# 🌍 Project 20: CloudGuard Multi-Cloud Orchestration
 
 ## 🚀 TL;DR
 
@@ -147,7 +147,7 @@ Automated agent deployment with proper EU region configuration, eliminating the 
 ## 📁 Project Structure
 
 ```
-CloudGuard-Trinity/
+CloudGuard-Multi-Cloud-Orchestration/
 ├── .github/
 │   └── workflows/
 │       └── deploy.yml              # CI/CD pipeline

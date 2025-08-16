@@ -150,7 +150,7 @@
               
               tags:
                 - env:production
-                - project:cloudguard-trinity
+                - project:cloudguard-orchestration
                 - cloud:{{ cloud_provider | lower }}
                 - region:{{ ansible_hostname }}
               
@@ -200,7 +200,7 @@
       copy:
         content: |
           ===================================
-          CloudGuard Trinity - Multi-Cloud Platform
+          CloudGuard Multi-Cloud Orchestration Platform
           ===================================
           Cloud Provider: {{ cloud_provider }}
           Instance: {{ ansible_hostname }}
