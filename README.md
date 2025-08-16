@@ -37,7 +37,7 @@ A unified orchestration platform that treats all three clouds as a single deploy
 
 ```
 ┌────────────────────────────────────────────────────────────┐
-│                        GitHub Repository                      │
+│                        GitHub Repository                   │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
 │  │   Terraform  │  │    Ansible   │  │    GitHub    │      │
 │  │     Code     │  │   Playbooks  │  │   Actions    │      │
@@ -53,8 +53,8 @@ A unified orchestration platform that treats all three clouds as a single deploy
         ▼                      ▼                      ▼
 ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
 │     AWS      │      │    Azure     │      │     GCP      │
-│   EC2 + SG   │      │   VM + NSG   │      │  GCE + FW   │
-│  eu-west-2   │      │   UK South   │      │europe-west2 │
+│   EC2 + SG   │      │   VM + NSG   │      │  GCE + FW    │
+│  eu-west-2   │      │   UK South   │      │europe-west2  │
 │              │      │              │      │              │
 │ Datadog Agent│      │ Datadog Agent│      │ Datadog Agent│
 └──────────────┘      └──────────────┘      └──────────────┘
